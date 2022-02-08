@@ -34,6 +34,12 @@ int main(int argc, char **argv)
 	const int SIZE = 4096;		  // file size
 	int n = atoi(argv[1]);		  // get CLI args
 
+	if (n < 1)
+	{
+		printf("Error: invalid input, enter a positive integer number.\n");
+		return 1;
+	}
+
 	int shm_fd; // file descriptor, from shm_open()
 	void *ptr;	// pointer to shared memory object
 
