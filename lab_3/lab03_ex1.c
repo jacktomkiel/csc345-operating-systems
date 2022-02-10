@@ -7,7 +7,7 @@ Lab 3 Excercise 1 */
 #include <pthread.h>
 
 int len = 7;
-int nums[7] = {90, 81, 78, 95, 79, 72, 85};
+int *nums;
 
 int r_min;
 int r_max;
@@ -36,7 +36,7 @@ void *myMax(void *param)
 void *myAverage(void *param)
 {
     int i;
-    r_avg = nums[0];
+    r_avg = 0;
     for ( i = 0; i < len; ++i ) {
         r_avg += nums[i];
     }
@@ -46,6 +46,18 @@ void *myAverage(void *param)
 
 int main(int argc, char** argv)
 {
+    if (argc <= 1)
+	{
+		printf("Give arguments!\n");
+		exit(0);
+	}
+
+    len = argc -1;
+    nums = (int*)malloc(sizeof(int)*len);
+    for (int i=1; i < argc; ++i)    {
+        nums[i-1] = atoi(argv[i]);
+    }
+
     pthread_t tid1;
     pthread_t tid2;
     pthread_t tid3;
@@ -59,5 +71,7 @@ int main(int argc, char** argv)
     printf ("Min = %d\n", r_min);
     printf ("Max = %d\n", r_max);
     printf ("Average = %f\n", r_avg);
+
+    free(nums);
     return 0;
 }
