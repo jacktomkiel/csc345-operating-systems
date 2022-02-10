@@ -2,6 +2,9 @@
 CSC345-01
 Lab 3 Excercise 1 */
 
+// TODO: variance, for the std, take variance, then sqrt
+// TODO: median, len % 2 == 0 then its even
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -44,6 +47,20 @@ void *myAverage(void *param)
     pthread_exit(0);
 }
 
+// void *myMedian(void *param)
+// {
+//     int n;
+//     qsort (values, ELEMENTS, sizeof(int), compare);
+//     for (n=0; n<ELEMENTS; n++)
+//     {   printf ("%d ",values[n]); }
+//     printf ("median=%d ",values[ELEMENTS/2]);
+// }
+
+// int compare (const void * a, const void * b)
+// {
+//   return ( *(int*)a - *(int*)b );
+// }
+
 int main(int argc, char** argv)
 {
     if (argc <= 1)
@@ -52,9 +69,12 @@ int main(int argc, char** argv)
 		exit(0);
 	}
 
-    len = argc -1;
+    // since the name of the program is an argument, the length is argc - 1
+    len = argc - 1;
+    // alocate memory 
     nums = (int*)malloc(sizeof(int)*len);
-    for (int i=1; i < argc; ++i)    {
+
+    for (int i = 1; i < argc; ++i)    {
         nums[i-1] = atoi(argv[i]);
     }
 
