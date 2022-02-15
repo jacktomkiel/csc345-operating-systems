@@ -58,10 +58,12 @@ void *myMedian(void *param)
 {
     int n;
     qsort(nums, len, sizeof(int), compare);
+    // if even
     if (len % 2 == 0)
     {
-        r_med = (nums[len / 2] + (nums[len / 2] - 1)) / 2.0;
+        r_med = ( nums[len / 2] + nums[ (len/2) - 1 ] ) / 2.0;
     }
+    // else odd
     else
     {
         r_med = nums[len / 2];
@@ -69,23 +71,23 @@ void *myMedian(void *param)
     pthread_exit(0);
 }
 
-void *myStd (void *param)
+void *myStd(void *param)
 {
     float mean;
     float mean_diff = 0;
-    
-    for ( int i = 0; i < len; ++i ) {
+
+    for (int i = 0; i < len; ++i)
+    {
         mean += nums[i];
     }
-    mean = mean/len;
+    mean = mean / len;
 
-
-    for ( int i = 0; i < len; ++i ) {
-        mean_diff +=( (nums[i] - mean) * (nums[i] - mean) );
+    for (int i = 0; i < len; ++i)
+    {
+        mean_diff += ((nums[i] - mean) * (nums[i] - mean));
     }
 
     mean_diff = mean_diff / len;
-
     r_std = sqrt(mean_diff);
 
     pthread_exit(0);
@@ -127,14 +129,13 @@ int main(int argc, char **argv)
     pthread_join(tid4, NULL);
     pthread_join(tid5, NULL);
 
-    // printf ("len = %d\n", len);
-
     printf("Min = %d\n", r_min);
     printf("Max = %d\n", r_max);
     printf("Average = %f\n", r_avg);
     printf("Median = %f\n", r_med);
-    printf ("Standard Deviation = %f\n", r_std);
+    printf("Standard Deviation = %f\n", r_std);
 
     free(nums);
+    
     return 0;
 }

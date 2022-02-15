@@ -36,9 +36,7 @@ int main(int argc, char** argv)
     pts_total = atoi(argv[1]);
 
     pthread_t tid;
-
     pthread_create(&tid, 0, runner, NULL);
-
     pthread_join(tid, NULL);
 
     double pi = 4.0 * ((double)pts_circle / (double)pts_total);
