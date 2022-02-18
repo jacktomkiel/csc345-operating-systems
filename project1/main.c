@@ -21,7 +21,7 @@ int main(void)
     char *token;
     char *history = "default";
     char *cmd; // store current command
-    char dir[300];
+    char dir[900];
 
     /* flags */
     int should_run = 1;         
@@ -39,6 +39,10 @@ int main(void)
 
     while (should_run)
     {
+        // if (should_run != 1)
+        // {
+        //     exit(0);
+        // }
         should_run = 1;
         argc = 0, background_process = 0, run_command = 0, pipe_process = 0, redirect_in = 0, redirect_out = 0;
 
@@ -64,6 +68,11 @@ int main(void)
         //     continue;
         // }
 
+        if (strcmp(cmdBuf, "exit") == 0)
+        {
+            exit(0);
+        }
+
         if (strcmp(cmdBuf, "!!") == 0)
         {
             if (strcmp(history, "default") == 0)
@@ -75,7 +84,7 @@ int main(void)
             {
                 cmd = strdup(history);
                 printf("%s\n", history);
-                run_command = 1;
+                //run_command = 1;
             }
         }
         else
@@ -84,8 +93,9 @@ int main(void)
             history = strdup(cmd);
         }
 
+        printf("command: %s\n", cmdBuf);
         /* parse cmdBuf into args[] */
-        token = strtok(cmdBuf," ");
+        token = strtok(cmd," ");
         while (token != NULL) 
         {
             args[argc] = token;
@@ -98,16 +108,17 @@ int main(void)
         //     printf("args: %s\n", args[i]);
         // }
 
-        if (strcmp(args[0], "exit") == 0)
-        {
-            should_run = 0;
-        }
+        // if (strcmp(args[i], "exit") == 0)
+        // {
+        //     should_run = 0;
+        //     continue;
+        // }
 
         if (strcmp(args[0], "cd") == 0)
         {
-            if (chdir(args[1]) == 0)
+            if (chdir(args[1]) == 0) // means it worked
             {
-                chdir(args[1]);
+                // chdir(args[1]);
             }
             else
             {
@@ -138,6 +149,7 @@ int main(void)
             }
         }
 
+        printf("args: %s\n", args[0]);
         pid = fork();
 
         /* child process */
@@ -147,14 +159,15 @@ int main(void)
             if (argc > 0)
             {
                 execvp(args[0], args);
-                continue;
+                //continue;
             }
             /* otherwise, continue loop */
             else
             {
                 should_run = 0;
-                // printf("Enter an argument...\n");
+                printf("Enter an argument...\n");
             }
+            exit(0); // kill child
         }
         /* parent will invoke wait() unless str included & */
         else if (pid > 0)
