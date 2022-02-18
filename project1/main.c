@@ -21,7 +21,7 @@ int main(void)
     char *token;
     char *history = "default";
     char *cmd; // store current command
-    char dir[900];
+    char dir[100];
 
     /* flags */
     int should_run = 1;         
@@ -40,6 +40,7 @@ int main(void)
     while (should_run)
     {
         should_run = 1;
+        /* reset flags */
         argc = 0, background_process = 0, run_command = 0, pipe_process = 0, redirect_in = 0, redirect_out = 0;
 
         printf("osh>%s$ ", getcwd(dir, sizeof(dir)));
@@ -57,16 +58,17 @@ int main(void)
         /* echo user command for testing */
         // printf("You Entered: %s\n", cmdBuf);
 
-        // this is causing problems idk why maybe use args[] instead
+        // causing problems
+        /* if user enters nothing, restart shell loop */
         if (strcmp(cmdBuf, "\0") == 0)
         {
             continue;
         }
 
-        if (strcmp(cmdBuf, "exit") == 0)
-        {
-            exit(0);
-        }
+        // if (strcmp(cmdBuf, "exit") == 0)
+        // {
+        //     exit(0);
+        // }
 
         if (strcmp(cmdBuf, "!!") == 0)
         {
@@ -89,11 +91,11 @@ int main(void)
 
         // printf("command: %s\n", cmdBuf);
 
-        /* parse the user's command (cmd) into args[] */
-        token = strtok(cmd," ");
-        while (token != NULL) 
+        /* parse the user's command into separate tokens and store as array of character strings, args[] */
+        token = strtok(cmd," ");    /* divides user cmd into tokens at each whitespace*/
+        while (token != NULL)       /* while there is tokens */
         {
-            args[argc] = token;
+            args[argc] = token;     /* store token in args[] array */
             token = strtok(NULL, " ");
             argc++;
         }
@@ -104,52 +106,63 @@ int main(void)
         //     printf("args: %s\n", args[i]);
         // }
 
-        // if (strcmp(args[i], "exit") == 0)
-        // {
-        //     should_run = 0;
-        //     continue;
-        // }
+        /* when the user enters exit at prompt, program sets should_run = 0, and terminates */
+        if (strcmp(args[0], "exit") == 0)
+        {
+            should_run = 0;
+            continue;
+        }
 
+        /* since 'cd' is a "built in" shell function, it is implemented here */
         if (strcmp(args[0], "cd") == 0)
         {
-            if (chdir(args[1]) == 0) // means it worked
+            if (chdir(args[1]) == 0)    /* changes the current working directory, returns zero on success */
             {
-                // chdir(args[1]);
+                /* do nothing, since it was successful */
             }
             else
-            {
-                printf("Directory does not exist!\n");
+            {   
+                /* otherwise, tell the user the directory does not exist */
+                printf("osc: cd: %s: No such file or directory\n", args[1]); /* mimics bash output style */
             }
         }
 
+        /* check whether user included & to determine whether or not the parent process should wait for child to exit */
         if (strcmp(args[argc-1], "&") == 0)
         {
-            background_process = 1;
-            args[argc-1] = '\0';
+            background_process = 1; /* set background_process flag */
+            args[argc-1] = '\0';    /* replace & argument with NULL */
             // printf("I am behaving correctly!\n");
         }
 
+        /* if there are more than 2 arguments, check for redirect operators */
         if (argc > 2)
         {
             if (strcmp(args[argc-2], ">") == 0)
             {
-                args[argc-2] = '\0';
-                redirect_out = 1;
+                args[argc-2] = '\0';    /* replace > argument with NULL */
+                redirect_out = 1;       /* set redirect_out flag */
                 // printf("I am behaving correctly!\n");
             }
             else if (strcmp(args[argc-2], "<") == 0)
             {
-                args[argc-2] = '\0';
-                redirect_in = 1;
+                args[argc-2] = '\0';    /* replace < argument with NULL */
+                redirect_in = 1;        /* set redirect_in flag */
                 // printf("I am behaving correctly!\n");
             }
         }
-
         // printf("args: %s\n", args[0]);
+
+        /* child process is forked to execute command by the user */
         pid = fork();
 
         /* child process */
-        if (pid == 0)
+        if (pid < 0) 
+        {
+            printf("Fork Failed!");
+            exit(0);
+        }
+        else if (pid == 0)
         {   
             /* if there is arguments, the child process will invoke execvp() */
             if (argc > 0)
