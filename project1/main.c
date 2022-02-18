@@ -39,15 +39,10 @@ int main(void)
 
     while (should_run)
     {
-        // if (should_run != 1)
-        // {
-        //     exit(0);
-        // }
         should_run = 1;
         argc = 0, background_process = 0, run_command = 0, pipe_process = 0, redirect_in = 0, redirect_out = 0;
 
         printf("osh>%s$ ", getcwd(dir, sizeof(dir)));
-        // printf("osh>");
         fflush(stdout);
 
         /* get user input, a newline-terminated string of finite length from STREAM */
@@ -63,10 +58,10 @@ int main(void)
         // printf("You Entered: %s\n", cmdBuf);
 
         // this is causing problems idk why maybe use args[] instead
-        // if (strcmp(cmdBuf, "\n") || strcmp(cmdBuf, "\0") == 0)
-        // {
-        //     continue;
-        // }
+        if (strcmp(cmdBuf, "\0") == 0)
+        {
+            continue;
+        }
 
         if (strcmp(cmdBuf, "exit") == 0)
         {
@@ -84,7 +79,6 @@ int main(void)
             {
                 cmd = strdup(history);
                 printf("%s\n", history);
-                //run_command = 1;
             }
         }
         else
@@ -93,8 +87,9 @@ int main(void)
             history = strdup(cmd);
         }
 
-        printf("command: %s\n", cmdBuf);
-        /* parse cmdBuf into args[] */
+        // printf("command: %s\n", cmdBuf);
+
+        /* parse the user's command (cmd) into args[] */
         token = strtok(cmd," ");
         while (token != NULL) 
         {
@@ -102,7 +97,8 @@ int main(void)
             token = strtok(NULL, " ");
             argc++;
         }
-        args[argc] = '\0'; // end with NULL for execvp() functionality
+        args[argc] = '\0'; /* end with NULL to ensure correct execvp() functionality */
+
         // for (int i = 0; i < argc; i++)
         // {
         //     printf("args: %s\n", args[i]);
@@ -149,7 +145,7 @@ int main(void)
             }
         }
 
-        printf("args: %s\n", args[0]);
+        // printf("args: %s\n", args[0]);
         pid = fork();
 
         /* child process */
