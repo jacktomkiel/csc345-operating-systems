@@ -17,20 +17,20 @@ Project #1: User Interface */
 int main(void)
 {
     char *args[MAX_LINE / 2 + 1]; /* command line arguments */
-    char str[MAX_LINE / 2 + 1];
+    char cmdBuf[MAX_LINE / 2 + 1];
     char *token;
-    char *history; //  = malloc(sizeof(char) * MAX_LINE);
-    char *cmd = malloc(sizeof(char));
+    char *history = "0";
+    char *cmd; // store current command
+    char dir[300];
 
     /* flags */
-    int should_run = 1;         /* determine when to exit program */
-    int background_process = 0; /* determine when to exit program */
-    int pipe_process = 0;       /* determine when to exit program */
-    int redirect_out = 0;       /* determine when to exit program */
-    int redirect_in = 0;        /* determine when to exit program */
+    int should_run = 1;         
+    int background_process = 0; 
+    int pipe_process = 0;       
+    int redirect_out = 0;       
+    int redirect_in = 0;        
 
     int argc;
-    int history_count = 0;
     int pipefd[2]; 
 
     pid_t pid;
@@ -39,53 +39,109 @@ int main(void)
     while (should_run)
     {
         should_run = 1;
-        background_process = 0;
-        pipe_process = 0;
-        redirect_out = 0;
-        redirect_in = 0; 
+        argc = 0, background_process = 0, pipe_process = 0, redirect_in = 0, redirect_out = 0;
 
-        printf("osh>");
+        printf("osh>%s$ ", getcwd(dir, sizeof(dir)));
         fflush(stdout);
 
         /* get user input, a newline-terminated string of finite length from STREAM */
-        fgets(str, MAX_LINE, stdin); 
+        fgets(cmdBuf, MAX_LINE, stdin); 
 
         /* since fgets() considers \n as a valid character, we need to set it to NULL, \0 */
-        if ((strlen(str) > 0) && (str[strlen(str) - 1] == '\n'))
+        if (cmdBuf[strlen(cmdBuf) - 1] == '\n')
         {
-            str[strlen(str) - 1] = '\0';
+            cmdBuf[strlen(cmdBuf) - 1] = '\0';
         }
-        
+
         /* echo user command for testing */
-        // printf("You Entered: %s\n", str);
+        // printf("You Entered: %s\n", cmdBuf);
 
-        token = strtok(cmd," ");
 
+        if (strcmp(cmdBuf, "\n") == 0)
+        {
+            continue;
+        }
+
+        /* parse cmdBuf into args[] */
+        token = strtok(cmdBuf," ");
         while (token != NULL) 
         {
             args[argc] = token;
             token = strtok(NULL, " ");
             argc++;
         }
-        args[argc] = '\0';
+        args[argc] = '\0'; // end with NULL for execvp() functionality
 
-        // history stuff
-        if (strcmp(str,"!!") == 0)
+        if (strcmp(args[0], "exit\n") == 0)
         {
-            if (history_count <= 0){
-                printf("no history\n");
+            should_run = 0;
+        }
+
+        if (strcmp(args[0], "cd") == 0)
+        {
+            if (chdir(args[1]) == 0)
+            {
+                chdir(args[1]);
             }
             else
             {
-                printf("history\n");
+                printf("Directory does not exist!\n");
             }
-            
         }
 
-        if (strcmp(str,"exit\0") == 0)
+        if (strcmp(args[argc-1], "&\n") == 0)
         {
-            return 0;
+            background_process = 1;
+            args[argc-1] = '\0';
         }
+
+        if (argc > 2)
+        {
+            if (strcmp(args[argc-2], ">") == 0)
+            {
+                args[argc-2] = '\0';
+                redirect_out = 1;
+            }
+            else if (strcmp(args[argc-2], "<") == 0)
+            {
+                args[argc-2] = '\0';
+                redirect_in = 1;
+            }
+        }
+
+        pid = fork();
+
+        /* child process */
+        if (pid == 0)
+        {   
+            /* if there is arguments, the child process will invoke execvp() */
+            if (argc > 0)
+            {
+                execvp(args[0],args);
+            }
+            /* otherwise, continue loop */
+            else
+            {
+                continue;
+                // printf("Enter an argument...\n");
+            }
+        }
+        /* parent will invoke wait() unless str included & */
+        else if (pid > 0)
+        {
+            if (background_process = 0)
+            {
+                wait(NULL);
+            }
+        }
+        
+
+
+        
+        
+        
+
+
         /**
          * After reading user input, the steps are:
          * (1) fork a child process using fork()
@@ -95,3 +151,56 @@ int main(void)
     }
     return 0;
 }
+
+// if (strcmp(cmdBuf, "!!") == 0)
+        // {
+        //     if (strcmp(history, "0") == 0)
+        //     {
+        //         printf("No commands in history.\n");
+        //         continue;
+        //     }
+        //     else
+        //     {
+        //         cmd = strdup(history);
+        //         printf("test %s\n", history);
+        //     }
+        // }
+        // else
+        // {
+        //     cmd = cmdBuf;
+        //     history - strdup(cmd);
+        // }
+
+
+        /* echo user command for testing */
+        // printf("You Entered: %s\n", cmdBuf);
+
+        // for (int i = 0; i < argc; i++)
+        // {
+        //     printf("args: %s\n", args[i]);
+        // }
+
+
+
+        // history stuff
+        // if (strcmp(cmdBuf,"!!") == 0)
+        // {
+        //     if (history_count <= 0){
+        //         printf("no history\n");
+        //     }
+        //     else
+        //     {
+        //         printf("history\n");
+        //     }
+            
+        // }
+
+        // if (strcmp(cmdBuf,"exit\0") == 0)
+        // {
+        //     return 0;
+        // }
+
+        // for (int i = 0; i < argc; i++)
+        // {
+        //     break;
+        // }
