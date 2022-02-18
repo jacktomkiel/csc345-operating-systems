@@ -19,8 +19,8 @@ int main(void)
     char *args[MAX_LINE / 2 + 1]; /* command line arguments */
     char str[MAX_LINE / 2 + 1];
     char *token;
-    char *history = malloc(sizeof(char) * MAX_LINE);
-    char *cmd;
+    char *history; //  = malloc(sizeof(char) * MAX_LINE);
+    char *cmd = malloc(sizeof(char));
 
     /* flags */
     int should_run = 1;         /* determine when to exit program */
@@ -30,7 +30,6 @@ int main(void)
     int redirect_in = 0;        /* determine when to exit program */
 
     int argc;
-    int len;
     int history_count = 0;
     int pipefd[2]; 
 
@@ -39,29 +38,17 @@ int main(void)
 
     while (should_run)
     {
-        int should_run = 1;         /* determine when to exit program */
-        int background_process = 0; /* determine when to exit program */
-        int pipe_process = 0;       /* determine when to exit program */
-        int redirect_out = 0;       /* determine when to exit program */
-        int redirect_in = 0;        /* determine when to exit program */
+        should_run = 1;
+        background_process = 0;
+        pipe_process = 0;
+        redirect_out = 0;
+        redirect_in = 0; 
+
         printf("osh>");
         fflush(stdout);
 
         /* get user input, a newline-terminated string of finite length from STREAM */
         fgets(str, MAX_LINE, stdin); 
-
-        if (strlen(str) <= 0)
-        {
-            return 0;
-        }
-
-        else
-        {
-            for(int i = 0; i < strlen(str); i++)
-            {
-                
-            }
-        }
 
         /* since fgets() considers \n as a valid character, we need to set it to NULL, \0 */
         if ((strlen(str) > 0) && (str[strlen(str) - 1] == '\n'))
@@ -70,16 +57,32 @@ int main(void)
         }
         
         /* echo user command for testing */
-        printf("You Entered: %s\n", str);
+        // printf("You Entered: %s\n", str);
+
+        token = strtok(cmd," ");
+
+        while (token != NULL) 
+        {
+            args[argc] = token;
+            token = strtok(NULL, " ");
+            argc++;
+        }
+        args[argc] = '\0';
 
         // history stuff
         if (strcmp(str,"!!") == 0)
         {
-            if
-            printf("You Entered: %s\n", str);
+            if (history_count <= 0){
+                printf("no history\n");
+            }
+            else
+            {
+                printf("history\n");
+            }
+            
         }
 
-        if (strcmp(str,"exit") == 0)
+        if (strcmp(str,"exit\0") == 0)
         {
             return 0;
         }
