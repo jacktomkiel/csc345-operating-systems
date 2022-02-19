@@ -19,7 +19,7 @@ int main(void)
     char *args[MAX_LINE / 2 + 1]; /* command line arguments */
     char cmdBuf[MAX_LINE / 2 + 1];
     char *token;
-    char *history = "default";
+    char *history = "\0";
     char *cmd; // store current command
     char dir[100];
 
@@ -70,23 +70,25 @@ int main(void)
         //     exit(0);
         // }
 
+        /* history feature, if user enters history command, execute */
         if (strcmp(cmdBuf, "!!") == 0)
         {
-            if (strcmp(history, "default") == 0)
+            if (strcmp(history, "\0") == 0)    /* if history is empty, tell the user, restart shell loop */
             {
                 printf("No commands in history.\n");
                 continue;
             }
             else
             {
-                cmd = strdup(history);
-                printf("%s\n", history);
+                cmd = strdup(history);         /* strdup returns a pointer to history string, store pointer */
+                printf("%s\n", history);       /* print history string */
             }
         }
+        /* if user did not enter history command, record their command */
         else
         {
-            cmd = cmdBuf;
-            history = strdup(cmd);
+            cmd = cmdBuf;           /* pointer to command entered by user */
+            history = strdup(cmd);  /* store pointer to command entered by user*/
         }
 
         // printf("command: %s\n", cmdBuf);
@@ -106,14 +108,14 @@ int main(void)
         //     printf("args: %s\n", args[i]);
         // }
 
-        /* when the user enters exit at prompt, program sets should_run = 0, and terminates */
+        /* when the user enters exit at prompt, program sets should_run = 0, restarts shell loop, forcing termination */
         if (strcmp(args[0], "exit") == 0)
         {
             should_run = 0;
-            continue;
+            continue;   /* jumps to top of while() loop */
         }
 
-        /* since 'cd' is a "built in" shell function, it is implemented here */
+        /* since 'cd' is a "built in" shell functionality, it must be handled here */
         if (strcmp(args[0], "cd") == 0)
         {
             if (chdir(args[1]) == 0)    /* changes the current working directory, returns zero on success */
@@ -156,19 +158,21 @@ int main(void)
         /* child process is forked to execute command by the user */
         pid = fork();
 
-        /* child process */
+        /* if fork() fails, exit */
         if (pid < 0) 
         {
             printf("Fork Failed!");
-            exit(0);
+            should_run = 0; // exit(0);
+            continue;
         }
+        /* child process */
         else if (pid == 0)
         {   
             /* if there is arguments, the child process will invoke execvp() */
             if (argc > 0)
             {
-                execvp(args[0], args);
-                //continue;
+                execvp(args[0], args);  /* pass args to execvp() function */
+                // continue;
             }
             /* otherwise, continue loop */
             else
@@ -176,11 +180,12 @@ int main(void)
                 should_run = 0;
                 printf("Enter an argument...\n");
             }
-            exit(0); // kill child
+            exit(0);    /* kill child process after its done executing args */
         }
-        /* parent will invoke wait() unless str included & */
+        /* parent process */
         else if (pid > 0)
         {
+            /* parent will invoke wait() unless str included & (background_process) flag*/
             if (background_process == 0)
             {
                 wait(NULL);
