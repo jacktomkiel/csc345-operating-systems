@@ -12,20 +12,23 @@ Project #1: User Interface */
 #include <sys/types.h>
 #include <sys/stat.h>
 
+/* ANSI escape codes to show colors */
+#define RED(string) "\x1b[31m" string "\x1b[0m"
+
 #define MAX_LINE 80 /* The maximum length str */
-#define READ_END 0 
+#define READ_END 0
 #define WRITE_END 1
 
 int main(void)
 {
-    char *args[MAX_LINE / 2 + 1]; /* command line arguments */
-    char cmdBuf[MAX_LINE / 2 + 1];
-    char *token;
-    char *history = "\0";
-    char *cmd; // store current command
-    char dir[100];
+    char *args[MAX_LINE / 2 + 1];  /* command line arguments */
+    char cmdBuf[MAX_LINE / 2 + 1]; /* command user enters */
+    char *token;                   /* token pointer for user command parsing */
+    char *history = "\0";          /* history pointer, default is NULL */
+    char *cmd;                     /* pointer for command history */
+    char dir[100];                 /* char array for getcwd() */
 
-    /* flags */
+    /* program flags */
     int should_run = 1;
     int background_process = 0;
     int run_command = 0;
@@ -34,9 +37,10 @@ int main(void)
     int redirect_out = 0;
     int redirect_in = 0;
 
-    int argc;
-    int fd[2];
+    int argc;  /* argument count */
+    int fd[2]; /* fd for pipes */
 
+    /* pids */
     pid_t pid;
     pid_t pid_pipe;
 
@@ -46,7 +50,7 @@ int main(void)
         /* reset flags */
         argc = 0, background_process = 0, run_command = 0, pipe_process = 0, pipe_index = 0, redirect_in = 0, redirect_out = 0;
 
-        printf("osh>%s$ ", getcwd(dir, sizeof(dir)));
+        printf("osc:"RED("%s> "), getcwd(dir, sizeof(dir)));
         fflush(stdout);
 
         /* get user input, a newline-terminated string of finite length from STREAM */
@@ -58,20 +62,11 @@ int main(void)
             cmdBuf[strlen(cmdBuf) - 1] = '\0';
         }
 
-        /* echo user command for testing */
-        // printf("You Entered: %s\n", cmdBuf);
-
-        // causing problems
         /* if user enters nothing, restart shell loop */
         if (strcmp(cmdBuf, "\0") == 0)
         {
             continue;
         }
-
-        // if (strcmp(cmdBuf, "exit") == 0)
-        // {
-        //     exit(0);
-        // }
 
         /* history feature, if user enters history command, execute */
         if (strcmp(cmdBuf, "!!") == 0)
@@ -167,7 +162,7 @@ int main(void)
         /* child process is forked to execute command by the user */
         pid = fork();
 
-        /* if fork() fails, exit */
+        /* if fork() fails, exit w/error */
         if (pid < 0)
         {
             fprintf(stderr, "Fork failed");
@@ -185,7 +180,7 @@ int main(void)
                 if ((fd0 = open(args[argc - 1], O_RDONLY)) < 0)
                 {
                     perror("could not open input file");
-                    exit(0);
+                    exit(0); /* kill process */
                 }
                 /* duplicates fd to standard output (the terminal) */
                 dup2(fd0, STDIN_FILENO); /* STDIN_FILENO expands to 0, either works */
@@ -197,7 +192,7 @@ int main(void)
                 if ((fd1 = creat(args[argc - 1], 0644)) < 0)
                 {
                     perror("could not open output file");
-                    exit(0);
+                    exit(0); /* kill process */
                 }
                 /* duplicates fd to standard input (the terminal) */
                 dup2(fd1, STDOUT_FILENO); /* STDOUT_FILENO expands to 1, either works */
@@ -208,10 +203,9 @@ int main(void)
                 if (pipe(fd) == -1)
                 {
                     fprintf(stderr, "Pipe failed");
-                    return 1;
+                    return 1;   /* exit with error */
                 }
-                // pipe(fd);
-                args[pipe_index] = '\0';    /* for execvp() function requirements */
+                args[pipe_index] = '\0'; /* for execvp() function requirements */
 
                 /* fork a grandchild process */
                 pid_pipe = fork();
@@ -219,7 +213,7 @@ int main(void)
                 if (pid_pipe < 0)
                 {
                     fprintf(stderr, "Fork failed");
-                    return 1;
+                    return 1;   /* exit with error */
                 }
                 /* grandchild process */
                 if (pid_pipe == 0)
@@ -237,8 +231,8 @@ int main(void)
                     dup2(fd[READ_END], STDIN_FILENO);
                     close(fd[WRITE_END]);
 
-                    execvp(args[pipe_index + 1], args + (pipe_index + 1));  /* pass the piped arguments to execvp() function */
-                    exit(0);                   /* kill grandparent process after its done executing args */
+                    execvp(args[pipe_index + 1], args + (pipe_index + 1)); /* pass the piped arguments to execvp() function */
+                    exit(0);                                               /* kill grandparent process after its done executing args */
                 }
             }
             else
@@ -254,69 +248,14 @@ int main(void)
             if (background_process == 0)
             {
                 wait(NULL);
-                // printf("Child process finished...\n");
+                /* printf("Child process finished...\n"); */
             }
             else
             {
-                printf("I'm not waiting for you!\n");
+                /* run concurrently */
+                /* printf("I'm not waiting for you!\n"); */
             }
         }
-        // else
-        // {
-        //     /* if user does not enter args */
-        //     should_run = 0;
-        //     printf("Enter an argument...\n");
-        // }
     }
     return 0;
 }
-
-// if (strcmp(cmdBuf, "!!") == 0)
-// {
-//     if (strcmp(history, "0") == 0)
-//     {
-//         printf("No commands in history.\n");
-//         continue;
-//     }
-//     else
-//     {
-//         cmd = strdup(history);
-//         printf("test %s\n", history);
-//     }
-// }
-// else
-// {
-//     cmd = cmdBuf;
-//     history - strdup(cmd);
-// }
-
-/* echo user command for testing */
-// printf("You Entered: %s\n", cmdBuf);
-
-// for (int i = 0; i < argc; i++)
-// {
-//     printf("args: %s\n", args[i]);
-// }
-
-// history stuff
-// if (strcmp(cmdBuf,"!!") == 0)
-// {
-//     if (history_count <= 0){
-//         printf("no history\n");
-//     }
-//     else
-//     {
-//         printf("history\n");
-//     }
-
-// }
-
-// if (strcmp(cmdBuf,"exit\0") == 0)
-// {
-//     return 0;
-// }
-
-// for (int i = 0; i < argc; i++)
-// {
-//     break;
-// }
