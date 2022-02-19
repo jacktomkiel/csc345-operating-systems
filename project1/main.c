@@ -13,6 +13,8 @@ Project #1: User Interface */
 #include <sys/stat.h>
 
 #define MAX_LINE 80 /* The maximum length str */
+#define READ_END 0 
+#define WRITE_END 1
 
 int main(void)
 {
@@ -33,7 +35,7 @@ int main(void)
     int redirect_in = 0;
 
     int argc;
-    int pipefd[2];
+    int fd[2];
 
     pid_t pid;
     pid_t pid_pipe;
@@ -168,9 +170,8 @@ int main(void)
         /* if fork() fails, exit */
         if (pid < 0)
         {
-            printf("Fork Failed!");
-            should_run = 0; // exit(0);
-            continue;
+            fprintf(stderr, "Fork failed");
+            return 1;
         }
         /* child process */
         /* if child process & there is arguments, let the child process run */
@@ -204,42 +205,46 @@ int main(void)
             }
             if (pipe_process == 1)
             {
-                printf("pipe flag is on\n");
-                pipe(pipefd);
+                if (pipe(fd) == -1)
+                {
+                    fprintf(stderr, "Pipe failed");
+                    return 1;
+                }
+                // pipe(fd);
+                args[pipe_index] = '\0';    /* for execvp() function requirements */
 
+                /* fork a grandchild process */
                 pid_pipe = fork();
                 /* if fork() fails, exit */
                 if (pid_pipe < 0)
                 {
-                    printf("Pipe fork Failed!");
-                    should_run = 0; // exit(0);
-                    continue;
+                    fprintf(stderr, "Fork failed");
+                    return 1;
                 }
                 /* grandchild process */
                 if (pid_pipe == 0)
                 {
-                    dup2(pipefd[1], STDOUT_FILENO);
-                    args[1] = '\0';
-                    close(pipefd[0]);
+                    dup2(fd[WRITE_END], STDOUT_FILENO);
+                    close(fd[READ_END]);
 
-                    execvp(args[0], args); /* pass the first argument to execvp() function */
+                    execvp(args[0], args); /* pass the first arguments to execvp() function */
                     exit(0);               /* kill grandchild process after its done executing args */
                 }
                 /* grandparent */
                 else if (pid_pipe > 0)
                 {
                     wait(NULL);
-                    dup2(pipefd[0], STDIN_FILENO);
-                    args[1] = '\0';
-                    close(pipefd[1]);
+                    dup2(fd[READ_END], STDIN_FILENO);
+                    close(fd[WRITE_END]);
 
-                    execvp(args[2], &args[2]); /* pass the first argument to execvp() function */
+                    execvp(args[pipe_index + 1], args + (pipe_index + 1));  /* pass the piped arguments to execvp() function */
                     exit(0);                   /* kill grandparent process after its done executing args */
                 }
             }
             else
             {
                 execvp(args[0], args); /* pass args to execvp() function */
+                exit(0);
             }
         }
         /* parent process */
@@ -256,12 +261,12 @@ int main(void)
                 printf("I'm not waiting for you!\n");
             }
         }
-        else
-        {
-            /* this statement never runs it seems */
-            should_run = 0;
-            printf("Enter an argument...\n");
-        }
+        // else
+        // {
+        //     /* if user does not enter args */
+        //     should_run = 0;
+        //     printf("Enter an argument...\n");
+        // }
     }
     return 0;
 }
