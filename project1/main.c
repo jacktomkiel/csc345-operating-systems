@@ -13,7 +13,8 @@ Project #1: User Interface */
 #include <sys/stat.h>
 
 /* ANSI escape codes to show colors */
-#define RED(string) "\x1b[31m" string "\x1b[0m"
+#define RED(string) "\x1b[1;31m" string "\x1b[0m"
+#define BWHT(string) "\x1b[1;37m" string "\x1b[0m"
 
 #define MAX_LINE 80 /* The maximum length str */
 #define READ_END 0
@@ -50,7 +51,7 @@ int main(void)
         /* reset flags */
         argc = 0, background_process = 0, run_command = 0, pipe_process = 0, pipe_index = 0, redirect_in = 0, redirect_out = 0;
 
-        printf("osc:"RED("%s> "), getcwd(dir, sizeof(dir)));
+        printf(BWHT("osc:")RED("%s"BWHT("> ")), getcwd(dir, sizeof(dir)));
         fflush(stdout);
 
         /* get user input, a newline-terminated string of finite length from STREAM */
@@ -240,6 +241,7 @@ int main(void)
                 execvp(args[0], args); /* pass args to execvp() function */
                 exit(0);
             }
+            exit(0);
         }
         /* parent process */
         else if (pid > 0)
