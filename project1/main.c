@@ -258,6 +258,7 @@ int main(void)
         }
         else
         {
+            /* this statement never runs it seems */
             should_run = 0;
             printf("Enter an argument...\n");
         }
