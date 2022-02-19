@@ -1,0 +1,7 @@
+decentlyworkingversion.c
+extra.c
+in.txt
+main
+main.c
+Makefile
+out.txt
