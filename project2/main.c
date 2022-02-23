@@ -1,73 +1,109 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include <sys/mman.h>
+#include <sys/shm.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
 
-int main(int argc, char**argv){
-	struct timeval start, end;
-	
-	
-	if(argc == 1 || argc > 2 || (atoi(argv[1]) < 1) || (atoi(argv[1]) > 3))
+/* The ith index in this array corresponds to the ith worker thread. If a worker sets 
+its corresponding value to 1, it is indicating that its region of the Sudoku puzzle 
+is valid. A value of 0 indicates otherwise. */
+int threadResult[27] = {0};
+
+typedef struct
+{
+	int row;
+	int column;
+} parameters;
+
+void isBoardValid(int threadResult[], int numThreads){
+	for (int i = 0; i < numThreads; i++)
 	{
-		printf("ERROR: Need single input paramter 1, 2, or 3\n");
-		return 0;
+		if (threadResult[i] == 0)
+		{
+			printf("SOLUTION: NO ");
+			return;
+		}
 	}
-	
-	int board[9][9];
-	
-	FILE* ptr = fopen("input.txt", "r");
-	if(ptr == NULL)
-	{
-		printf("ERROR: Could not open \"input.txt\"\n");
-		return 0;
-	}
-	
-	int b0,b1,b2,b3,b4,b5,b6,b7,b8;
-	for(int i = 0; i <9;i++)
-	{
-		fscanf(ptr, "%d %d %d %d %d %d %d %d %d",&b0,&b1,&b2,&b3,&b4,&b5,&b6,&b7,&b8);
-		board[i][0] = b0;
-		board[i][1] = b1;
-		board[i][2] = b2;
-		board[i][3] = b3;
-		board[i][4] = b4;
-		board[i][5] = b5;
-		board[i][6] = b6;
-		board[i][7] = b7;
-		board[i][8] = b8;
-	}
-	
+	printf("SOLUTION: YES ");
+}
+
+void printBoard(int board[9][9])
+{
 	printf("BOARD STATE IN input.txt:\n");
-	for(int i=0;i<9;i++){
-		for(int j=0;j<9;j++)
-			printf("%d ",board[i][j]);
+	for (int i = 0; i < 9; i++)
+	{
+		for (int j = 0; j < 9; j++)
+			printf("%d ", board[i][j]);
 		printf("\n");
 	}
-	
-	gettimeofday(&start,NULL);
-	switch(atoi(argv[1]))
+}
+
+int main(int argc, char** argv)
+{
+/* begin main */
+
+	/* initialize 9x9 soduku board */
+	int board[9][9];
+	int numThreads;
+
+	/* check for valid arguments */
+	if ( argc != 2 || (atoi(argv[1]) < 1) || (atoi(argv[1]) > 3) )
 	{
-		case 1:
-		printf("case1\n");
-		break;
-		
-		case 2:
-		printf("case2\n");
-		break;
-		
-		case 3:
-		printf("case3\n");
-		break;
-		
-		default : 
-		printf("ERROR: Need single input paramter 1, 2, or 3\n");
-		return 0;
-		break;
+		printf("ERROR: Enter a single input parameter 1, 2, or 3\n");
+		return 1;
 	}
-	usleep(1524700);
-	gettimeofday(&end,NULL);
-	printf("SOLUTION: idkbro (%f seconds)\n", (double)(end.tv_sec - start.tv_sec) + (((double)(end.tv_usec - start.tv_usec))/1000000) );
-	
-	return 0;
+
+	/* open file, put data into 2-dimensional array */
+	FILE *fp = fopen("input.txt", "r");
+	if (fp == NULL)
+	{
+		printf("ERROR: Could not open \"input.txt\"\n");
+		return 1;
+	}
+	else
+	{
+		for (int i = 0; i < 9; i++)
+		{
+			for (int j = 0; j < 9; j++)
+			{
+				fscanf(fp, "%d", &board[i][j]);
+			}
+		}
+		fclose(fp);
+		/* print soduku board */
+		printBoard(board);
+	}
+
+	/* based off user argument, use desired multithreaded / multiprocess implementation */
+	switch (atoi(argv[1]))
+	{
+		case 1: /* 11 threads */
+			printf("case1\n");
+			numThreads = 11;
+			//stuff
+			isBoardValid(threadResult, numThreads);
+			break;
+		case 2: /* 27 threads */
+			printf("case2\n");
+			numThreads = 27;
+			//stuff
+			isBoardValid(threadResult, numThreads);
+			break;
+		case 3: /* multiprocess */
+			printf("case3\n");
+			numThreads = 0;
+			//stuff
+			break;
+		default:
+			return 1;
+	}
+
+/* end main */
+return 0;
 }
