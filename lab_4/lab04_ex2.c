@@ -1,6 +1,6 @@
 /** Jack Tomkiel
 CSC345-01
-Lab 4 Excercise 1 */
+Lab 4 Exercise 1 */
 
 #include <pthread.h>
 #include <stdio.h>
