@@ -1,6 +1,6 @@
 /** Jack Tomkiel
 CSC345-01
-Lab 4 Excercise 1 */
+Lab 4 Exercise 1 */
 
 #include <time.h>
 #include <stdio.h>
@@ -24,7 +24,6 @@ int main(int argc, char **argv)
         }
         if (j == i)
         {
-            // printf("%d ", j);
             ++count;
         }
     }
