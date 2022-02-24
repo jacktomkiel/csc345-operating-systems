@@ -6,7 +6,6 @@ Lab 4 Excercise 1 */
 #include <stdio.h>
 #define NUM_THREADS 5
 
-/* Each thread will begin control in this function */
 void *runner(void *param)
 {
     /* do some work ... */
@@ -20,9 +19,9 @@ int main(int argc, char *argv[])
     pthread_t tid[NUM_THREADS];
     pthread_attr_t attr;
 
-    pthread_attr_init(&attr); /* default attributes */
+    pthread_attr_init(&attr); 
 
-    /* get the current scheduling policy */
+    /* select the desired scheduling policy */
     if (pthread_attr_getschedpolicy(&attr, &policy) != 0)
         fprintf(stderr, "Unable to get policy.\n");
     else
@@ -34,16 +33,14 @@ int main(int argc, char *argv[])
         else if (policy == SCHED_FIFO) 
             printf("SCHED_FIFO\n");
     }
-
-    /* set the scheduling policy - FIFO, RR, or OTHER */
+    
+    /* scheduling policy is set here */
     if (pthread_attr_setschedpolicy(&attr, SCHED_RR) != 0)
         fprintf(stderr, "Unable to set policy.\n");
 
-    /* create the threads */
     for (i=0;i<NUM_THREADS;i++)
         pthread_create(&tid[i], &attr, runner, NULL);
 
-    /* get the current scheduling policy */
     if (pthread_attr_getschedpolicy(&attr, &policy) != 0)
         fprintf(stderr, "Unable to get policy.\n");
 

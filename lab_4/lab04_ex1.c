@@ -24,7 +24,6 @@ int main(int argc, char **argv)
         }
         if (j == i)
         {
-            // printf("%d ", j);
             ++count;
         }
     }
