@@ -3,6 +3,7 @@
         "fcntl.h": "c",
         "string.h": "c",
         "sstream": "c",
-        "pthread.h": "c"
+        "pthread.h": "c",
+        "math.h": "c"
     }
 }
