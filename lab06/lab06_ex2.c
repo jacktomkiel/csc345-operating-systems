@@ -27,12 +27,14 @@ int waiting_south = 0;
 int on_bridge = 0;
 int prev_turn = 0; // 0 for south, 1 for north
 
-void enter_bridge_north(char* bound, int idx)
+void enter_bridge_north(char* side, int idx)
 {
-    printf("M1: %s farmer #%d arrived at the bridge\n", bound, idx);
-    ++waiting_north;
+    printf("M1: %s farmer #%d is about to enter the bridge\n", side, idx);
+    ++waiting_north; 
+
     pthread_mutex_lock(&t);
-    printf("M2: %s farmer #%d entered the bridge\n", bound, idx);
+    printf("M2: %s farmer #%d entered the bridge\n", side, idx);
+
     while (on_bridge || (prev_turn == 0 && waiting_south > 0))
     {
         pthread_cond_wait(&c, &t);
@@ -42,25 +44,29 @@ void enter_bridge_north(char* bound, int idx)
     on_bridge = 1;
 }
 
-void enter_bridge_south(char* bound, int idx)
+void enter_bridge_south(char* side, int idx)
 {
-    printf("M1: %s farmer #%d arrived at the bridge\n", bound, idx);
+    printf("M1: %s farmer #%d is about to enter the bridge\n", side, idx);
     ++waiting_south;
+
     pthread_mutex_lock(&t);
-    printf("M2: %s farmer #%d entered the bridge\n", bound, idx);
+    printf("M2: %s farmer #%d entered the bridge\n", side, idx);
+
     while (on_bridge || (prev_turn == 1 && waiting_north > 0))
     {
         pthread_cond_wait(&c, &t);
     }
     --waiting_south;
-    prev_turn = 0;
+    prev_turn = 1;
     on_bridge = 1;
 }
 
-void exit_bridge(char* bound, int idx)
+void exit_bridge(char* side, int idx)
 {
-    printf("M5: %s farmer %d has left the bridge\n", bound, idx);
+    printf("M5: %s farmer #%d has left the bridge\n", side, idx);
+
     on_bridge = 0;
+
     pthread_cond_broadcast(&c);
     pthread_mutex_unlock(&t);
 }
@@ -68,20 +74,29 @@ void exit_bridge(char* bound, int idx)
 void* pass_bridge(void* param)
 {
     FARMER* f = (FARMER*) param;
-    char* bound = f->isNorth ? "North" : "South";
+    char* side;
+
+    if (f->isNorth)
+    {
+        side = "North";
+    }
+    else
+    {
+        side = "South";
+    }
 
     // on the bridge
     if (f->isNorth == 1) {
-        enter_bridge_north(bound, f->idx);
+        enter_bridge_north(side, f->idx);
     } else {
-        enter_bridge_south(bound, f->idx);
+        enter_bridge_south(side, f->idx);
     }
     
-    printf("  M3: %s farmer #%d will pass the bridge in %d seconds\n", bound, f->idx, f->waitfor);
+    printf("  M3: %s farmer #%d will pass the bridge in %d seconds\n", side, f->idx, f->waitfor);
     sleep(f->waitfor);
     
-    printf("  M4: %s farmer #%d has finished passing the bridge\n", bound, f->idx);
-	exit_bridge(bound, f->idx);
+    printf("  M4: %s farmer #%d has finished passing the bridge\n", side, f->idx);
+	exit_bridge(side, f->idx);
 
     pthread_exit(0);
 }
@@ -128,6 +143,12 @@ int main(int argc, char** argv)
     {
         pthread_join( fS[i].t, NULL );
     }
+
+    if ( (waiting_north && waiting_south) == 0)
+    {
+        printf("* All farmers passed *\n");
+    }
+    
 
     pthread_mutex_destroy(&t);
     pthread_cond_destroy(&c);

@@ -10,6 +10,9 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 
+/* ANSI escape codes to show colors */
+#define RED(string) "\x1b[1;31m" string "\x1b[0m"
+
 /* thread and child process check variables, no sync issue since we only set to 1 */
 int check = 0;
 int ccheck = 0;
@@ -523,11 +526,11 @@ int main(int argc, char **argv)
 	/* print if board is valid or not, as well as full time */
 	if (check == 0 && ccheck == 0)
 	{
-		printf("SOLUTION: YES (%f seconds)\n", fullTime);
+		printf("SOLUTION: YES ("RED("%f seconds")")\n", fullTime);
 	}
 	else
 	{
-		printf("SOLUTION: NO (%f seconds)\n", fullTime);
+		printf("SOLUTION: NO ("RED("%f seconds")")\n", fullTime);
 	}
 
 	return 0;
