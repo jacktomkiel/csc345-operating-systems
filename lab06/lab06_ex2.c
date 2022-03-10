@@ -2,8 +2,6 @@
 CSC345-01
 Lab 6 Exercise 2 */
 
-/* starvation free example */
-
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
