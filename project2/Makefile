@@ -1,5 +1,5 @@
 all:
-		gcc -o main main.c -lpthread
+		gcc -o main main.c -lpthread -lrt
 
 clean:
 		rm main
