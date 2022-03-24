@@ -25,4 +25,3 @@ int main(int argc, char** argv)
     return 0;
 }
 
-/* to zip file: >>> lab08 % zip -r lab08.zip . -x ".*" -x "__MACOSX" <<< */
