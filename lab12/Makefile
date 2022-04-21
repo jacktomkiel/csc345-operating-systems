@@ -1,5 +1,6 @@
 all:
-	gcc -o lab12_ex1 lab12_ex1.c
+	gcc -o echo_server echo_server.c
+	gcc -o echo_client echo_client.c
 
 clean:
-	rm lab12_ex1
+	rm echo_server echo_client
