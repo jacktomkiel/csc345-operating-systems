@@ -90,19 +90,20 @@ int main(int argc, char *argv[])
 	char buffer[256];
 	int n;
 
+	while (buffer[0] != '\n') {
+
 	// always clear buffer before receiving a new message
 	memset(buffer, 0, 256);
 	n = recv(newsockfd, buffer, 255, 0);
 	if (n < 0) error("ERROR reading from socket");
 
-	while (strlen(buffer) > 0)
-	{
 	//-----------------------------------------------
 	printf("Message from client: %s\n", buffer);
 	//-----------------------------------------------
 
 	n = send(newsockfd, buffer, strlen(buffer), 0);
 	if (n < 0) error("ERROR writing to socket");
+
 	}
 	
 	// close connection

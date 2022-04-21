@@ -57,8 +57,7 @@ int main(int argc, char *argv[])
 	char buffer[256];
 	int n;
 
-	while (strlen(buffer) > 0)
-	{
+	while (buffer[0] != '\n') {
 	//-------------------------------------------
 	printf("Please enter the message: ");
 	memset(buffer, 0, 256);
@@ -76,6 +75,7 @@ int main(int argc, char *argv[])
 	//-------------------------------------------
 	printf("Message from server: %s\n", buffer);
 	//-------------------------------------------
+
 	}
 
 	close(sockfd);
