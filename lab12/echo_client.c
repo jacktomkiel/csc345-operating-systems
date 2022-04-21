@@ -1,7 +1,3 @@
-/** Jack Tomkiel
-CSC345-01
-Lab 12 echo client */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -11,7 +7,7 @@ Lab 12 echo client */
 #include <netinet/in.h>
 #include <netdb.h> 
 
-#define PORT_NUM 1004
+#define PORT_NUM 12345
 
 void error(const char *msg)
 {
@@ -61,6 +57,8 @@ int main(int argc, char *argv[])
 	char buffer[256];
 	int n;
 
+	while (strlen(buffer) > 0)
+	{
 	//-------------------------------------------
 	printf("Please enter the message: ");
 	memset(buffer, 0, 256);
@@ -78,7 +76,8 @@ int main(int argc, char *argv[])
 	//-------------------------------------------
 	printf("Message from server: %s\n", buffer);
 	//-------------------------------------------
-	
+	}
+
 	close(sockfd);
 	
 	return 0;

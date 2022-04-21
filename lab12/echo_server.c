@@ -1,8 +1,4 @@
-/** Jack Tomkiel
-CSC345-01
-Lab 12 echo server */
-
-#include <stdio.h>
+ #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -10,7 +6,7 @@ Lab 12 echo server */
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#define PORT_NUM 1004
+#define PORT_NUM 12345
 
 void error(const char *msg)
 {
@@ -99,12 +95,15 @@ int main(int argc, char *argv[])
 	n = recv(newsockfd, buffer, 255, 0);
 	if (n < 0) error("ERROR reading from socket");
 
+	while (strlen(buffer) > 0)
+	{
 	//-----------------------------------------------
 	printf("Message from client: %s\n", buffer);
 	//-----------------------------------------------
 
 	n = send(newsockfd, buffer, strlen(buffer), 0);
 	if (n < 0) error("ERROR writing to socket");
+	}
 	
 	// close connection
 	close(newsockfd);
